@@ -964,7 +964,7 @@ object Build {
           IO.createDirectory(trgDir)
           new CloneCommand()
             .setDirectory(trgDir)
-            //.setURI("https://github.com/FabioPinheiro/scala-js") //FIXME
+            //.setURI("https://github.com/FabioPinheiro/scala-js") //TODO REMOVE
             .setURI("https://github.com/scala-js/scala-js.git")
             .call()
         }
