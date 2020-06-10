@@ -931,6 +931,8 @@ object Build {
       scalaJSUseMainModuleInitializer := true,
     )
 
+  val scalajsTestsCommit: Option[String] = Some("341e3a986460bf432f28338647f0142440119d98")
+
   /** Scala.js test suite.
    *
    *  This project downloads the sources of the upstream Scala.js test suite,
@@ -947,7 +949,8 @@ object Build {
       // Required to run Scala.js tests.
       fork in Test := false,
 
-      sourceDirectory in fetchScalaJSSource := target.value / s"scala-js-src-$scalaJSVersion",
+      sourceDirectory in fetchScalaJSSource :=
+        target.value / ("scala-js-src-" + scalaJSVersion + scalajsTestsCommit.map("-" + _).getOrElse("")),
 
       fetchScalaJSSource := {
         import org.eclipse.jgit.api._
@@ -961,14 +964,22 @@ object Build {
           IO.createDirectory(trgDir)
           new CloneCommand()
             .setDirectory(trgDir)
+            //.setURI("https://github.com/FabioPinheiro/scala-js") //FIXME
             .setURI("https://github.com/scala-js/scala-js.git")
             .call()
         }
+        s.log.info(s"Scala.js version $ver sources are on '$trgDir'")
 
         // Checkout proper ref. We do this anyway so we fail if something is wrong
         val git = Git.open(trgDir)
-        s.log.info(s"Checking out Scala.js source version $ver")
-        git.checkout().setName(s"v$ver").call()
+        scalajsTestsCommit match {
+          case None =>
+            s.log.info(s"Checking out Scala.js source version $ver")
+            git.checkout().setName(s"v$ver").call()
+          case Some(sha) =>
+            s.log.info(s"Checking out Scala.js source from commit $sha")
+            git.checkout().setName(sha).call()
+        }
 
         trgDir
       },
@@ -1058,14 +1069,21 @@ object Build {
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/junit" ** "*.scala").get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/niobuffer" ** "*.scala").get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/niocharset" ** (("*.scala": FileFilter)  -- "BaseCharsetTest.scala" -- "Latin1Test.scala" -- "USASCIITest.scala" -- "UTF16Test.scala" -- "UTF8Test.scala")).get
-          ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/scalalib" ** (("*.scala": FileFilter)  -- "ArrayBuilderTest.scala" -- "ClassTagTest.scala" -- "EnumerationTest.scala" -- "SymbolTest.scala")).get
+          ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/scalalib" ** (("*.scala": FileFilter)
+            //-- "ArrayBuilderTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4072 and for #9132 or https://github.com/scala-js/scala-js/pull/4071
+            //-- "ClassTagTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4072
+            -- "EnumerationTest.scala"
+            -- "SymbolTest.scala"
+            )).get
           ++ (dir / "shared/src/test/require-sam" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/compiler" ** (("*.scala": FileFilter) -- "DefaultMethodsTest.scala")).get
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/javalib/lang" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/javalib/util" ** (("*.scala": FileFilter) -- "CollectionsOnCopyOnWriteArrayListTestOnJDK8.scala")).get
           ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/io" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/lang" ** "*.scala").get
-          ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/util" ** (("*.scala": FileFilter) -- "ObjectsTestOnJDK7.scala")).get
+          ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/util" ** (("*.scala": FileFilter)
+            -- "ObjectsTestOnJDK7.scala" //JDK8 is the minimum java version requirement
+            )).get
         )
       }
     )
