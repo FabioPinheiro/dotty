@@ -8,19 +8,22 @@
 
 //[WIP] https://github.com/lampepfl/dotty/compare/master...FabioPinheiro:enable_ArrayBuilderTest_ClassTagTest_for_Scala_js
 
-package hello
 
-//import scala.scalajs.js
-import scala.reflect._
+object MyEnumeration extends Enumeration  { val A = Value }
 
-object HelloWorld {
-  val a = ClassTag.Nothing.runtimeClass  //all ok
-  val b = classOf[Nothing]  //fail with: Referring to non-existent class scala.Nothing
-  val c = classOf[Int]
-  def main(args: Array[String]): Unit = {
-    //println(a)
-  }
-}
+// package hello
+
+// //import scala.scalajs.js
+// import scala.reflect._
+
+// object HelloWorld {
+//   val a = ClassTag.Nothing.runtimeClass  //all ok
+//   val b = classOf[Nothing]  //fail with: Referring to non-existent class scala.Nothing
+//   val c = classOf[Int]
+//   def main(args: Array[String]): Unit = {
+//     //println(a)
+//   }
+// }
 
 /*
 sbt:dotty> sjsSandbox/run

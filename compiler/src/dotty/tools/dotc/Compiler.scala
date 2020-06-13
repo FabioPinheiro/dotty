@@ -44,6 +44,7 @@ class Compiler {
     List(new PostTyper) ::          // Additional checks and cleanups after type checking
     List(new sbt.ExtractAPI) ::     // Sends a representation of the API of classes to sbt via callbacks
     List(new SetRootTree) ::        // Set the `rootTreeOrProvider` on class symbols
+    List(new sjs.PrepJSInterop) ::  // Prepare ASTs for JavaScript interop (not enabled by default) // FIXME must run after the typer and before the pickle
     Nil
 
   /** Phases dealing with TASTY tree pickling and unpickling */

@@ -1070,10 +1070,11 @@ object Build {
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/niobuffer" ** "*.scala").get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/niocharset" ** (("*.scala": FileFilter)  -- "BaseCharsetTest.scala" -- "Latin1Test.scala" -- "USASCIITest.scala" -- "UTF16Test.scala" -- "UTF8Test.scala")).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/scalalib" ** (("*.scala": FileFilter)
-            //-- "ArrayBuilderTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4072 and for #9132 or https://github.com/scala-js/scala-js/pull/4071
-            //-- "ClassTagTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4072
-            -- "EnumerationTest.scala"
-            -- "SymbolTest.scala"
+            -- "ArrayBuilderTest.scala" //need to use scalajs/scalajs@341e3a9 see https://github.com/scala-js/scala-js/pull/4072 and lampepfl/dotty#9132
+            -- "ClassTagTest.scala" //need to use scalajs/scalajs@341e3a9 see https://github.com/scala-js/scala-js/pull/4072
+            //and also need to fix https://gitter.im/lampepfl/dotty?at=5ee10d097c64f31f1151ef7f but wait for lampepfl/dotty#9095 https://github.com/lampepfl/dotty/pull/9095
+            //-- "EnumerationTest.scala"
+            -- "SymbolTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4079
             )).get
           ++ (dir / "shared/src/test/require-sam" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/compiler" ** (("*.scala": FileFilter) -- "DefaultMethodsTest.scala")).get
@@ -1081,9 +1082,7 @@ object Build {
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/javalib/util" ** (("*.scala": FileFilter) -- "CollectionsOnCopyOnWriteArrayListTestOnJDK8.scala")).get
           ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/io" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/lang" ** "*.scala").get
-          ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/util" ** (("*.scala": FileFilter)
-            -- "ObjectsTestOnJDK7.scala" //JDK8 is the minimum java version requirement
-            )).get
+          ++ (dir / "shared/src/test/require-jdk7/org/scalajs/testsuite/javalib/util" ** (("*.scala": FileFilter) -- "ObjectsTestOnJDK7.scala")).get
         )
       }
     )
