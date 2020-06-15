@@ -143,6 +143,7 @@ object RefChecks {
    *
    *    1.1. M must have the same or stronger access privileges as O.
    *    1.2. O must not be effectively final.
+   *    1.9.2  If M or O are extension methods, they must both be extension methods.
    *    1.3. O is deferred, or M has `override` modifier.
    *    1.4. If O is stable, then so is M.
    *     // @M: LIFTED 1.5. Neither M nor O are a parameterized type alias
@@ -157,7 +158,6 @@ object RefChecks {
    *    1.8.2  M is of type []S, O is of type ()T and S <: T, or
    *    1.8.3  M is of type ()S, O is of type []T and S <: T, or
    *    1.9.1  If M is erased, O is erased. If O is erased, M is erased or inline.
-   *    1.9.2  If M or O are extension methods, they must both be extension methods.
    *    1.10.  If O is inline (and deferred, otherwise O would be final), M must be inline
    *    1.11.  If O is a Scala-2 macro, M must be a Scala-2 macro.
    *  2. Check that only abstract classes have deferred members
@@ -343,6 +343,10 @@ object RefChecks {
         overrideError("cannot be used here - classes can only override abstract types")
       else if (other.isEffectivelyFinal) // (1.2)
         overrideError(i"cannot override final member ${other.showLocated}")
+      else if (member.isAllOf(ExtensionMethod) && !other.isAllOf(ExtensionMethod)) // (1.9.2)
+        overrideError("is an extension method, cannot override a normal method")
+      else if (other.isAllOf(ExtensionMethod) && !member.isAllOf(ExtensionMethod)) // (1.9.2)
+        overrideError("is a normal method, cannot override an extension method")
       else if (!other.is(Deferred) &&
                  !other.name.is(DefaultGetterName) &&
                  !member.isAnyOverride)
@@ -394,10 +398,6 @@ object RefChecks {
         overrideError("is erased, cannot override non-erased member")
       else if (other.is(Erased) && !member.isOneOf(Erased | Inline)) // (1.9.1)
         overrideError("is not erased, cannot override erased member")
-      else if (member.isAllOf(ExtensionMethod) && !other.isAllOf(ExtensionMethod)) // (1.9.2)
-        overrideError("is an extension method, cannot override a normal method")
-      else if (other.isAllOf(ExtensionMethod) && !member.isAllOf(ExtensionMethod)) // (1.9.2)
-        overrideError("is a normal method, cannot override an extension method")
       else if other.is(Inline) && !member.is(Inline) then // (1.10)
         overrideError("is not inline, cannot implement an inline method")
       else if (other.isScala2Macro && !member.isScala2Macro) // (1.11)
