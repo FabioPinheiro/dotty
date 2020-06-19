@@ -47,7 +47,19 @@ class PositionPickler(pickler: TastyPickler, addrOfTree: untpd.Tree => Addr) {
 
     def pickleSource(source: SourceFile): Unit = {
       buf.writeInt(SOURCE)
-      buf.writeInt(pickler.nameBuffer.nameIndex(source.path.toTermName).index)
+      val pathName = source.path
+      val pickledPath =
+        val originalPath = java.nio.file.Paths.get(pathName.toString).normalize()
+        if originalPath.isAbsolute then
+          val path = originalPath.toAbsolutePath().normalize()
+          val cwd = java.nio.file.Paths.get("").toAbsolutePath().normalize()
+          try cwd.relativize(path)
+          catch case _: IllegalArgumentException =>
+            ctx.warning("Could not relativize path for pickling: " + originalPath)
+            originalPath
+        else
+          originalPath
+      buf.writeInt(pickler.nameBuffer.nameIndex(pickledPath.toString.toTermName).index)
     }
 
     /** True if x's position shouldn't be reconstructed automatically from its initial span

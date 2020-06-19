@@ -50,7 +50,7 @@ Uri => Advanced.scala
 Text => empty
 Language => Scala
 Symbols => 34 entries
-Occurrences => 92 entries
+Occurrences => 91 entries
 
 Symbols:
 advanced/C# => class C
@@ -144,7 +144,7 @@ Occurrences:
 [24:12..24:12): -> scala/reflect/Selectable.reflectiveSelectable().
 [24:12..24:13): s -> advanced/Test.s.
 [24:14..24:16): s1 -> advanced/Structural#s1().
-[24:16..24:16): -> scala/Selectable#selectDynamic().
+[24:16..24:16): -> scala/reflect/Selectable#selectDynamic().
 [25:6..25:8): s2 <- advanced/Test.s2.
 [25:11..25:12): s -> advanced/Test.s.
 [25:13..25:15): s2 -> advanced/Structural#s2().
@@ -152,7 +152,7 @@ Occurrences:
 [26:12..26:12): -> scala/reflect/Selectable.reflectiveSelectable().
 [26:12..26:13): s -> advanced/Test.s.
 [26:14..26:16): s2 -> advanced/Structural#s2().
-[26:16..26:16): -> scala/Selectable#selectDynamic().
+[26:16..26:16): -> scala/reflect/Selectable#selectDynamic().
 [27:6..27:8): s3 <- advanced/Test.s3.
 [27:11..27:12): s -> advanced/Test.s.
 [27:13..27:15): s3 -> advanced/Structural#s3().
@@ -160,9 +160,8 @@ Occurrences:
 [28:12..28:12): -> scala/reflect/Selectable.reflectiveSelectable().
 [28:12..28:13): s -> advanced/Test.s.
 [28:14..28:16): s3 -> advanced/Structural#s3().
-[28:16..28:16): -> scala/Selectable#applyDynamic().
+[28:16..28:16): -> scala/reflect/Selectable#applyDynamic().
 [28:18..28:18): -> scala/reflect/ClassTag.apply().
-[28:18..28:18): -> java/lang/Integer#TYPE.
 [28:19..28:22): ??? -> scala/Predef.`???`().
 [30:6..30:7): e <- advanced/Test.e.
 [30:14..30:23): Wildcards -> advanced/Wildcards#
@@ -1045,7 +1044,7 @@ Uri => Example.scala
 Text => empty
 Language => Scala
 Symbols => 5 entries
-Occurrences => 26 entries
+Occurrences => 25 entries
 
 Symbols:
 example/Example. => final object Example
@@ -1080,7 +1079,6 @@ Occurrences:
 [9:24..9:32): classTag -> scala/reflect/package.classTag().
 [9:33..9:36): Int -> scala/Int#
 [9:37..9:37): -> scala/reflect/ClassTag.apply().
-[9:37..9:37): -> java/lang/Integer#TYPE.
 
 expect/ForComprehension.scala
 -----------------------------
@@ -2431,7 +2429,7 @@ Uri => Synthetic.scala
 Text => empty
 Language => Scala
 Symbols => 37 entries
-Occurrences => 163 entries
+Occurrences => 162 entries
 
 Symbols:
 example/Synthetic# => class Synthetic
@@ -2488,7 +2486,6 @@ Occurrences:
 [6:8..6:13): empty -> scala/Array.empty().
 [6:14..6:17): Int -> scala/Int#
 [6:18..6:18): -> scala/reflect/ClassTag.apply().
-[6:18..6:18): -> java/lang/Integer#TYPE.
 [6:19..6:29): headOption -> scala/collection/ArrayOps#headOption().
 [7:2..7:2): -> scala/Predef.augmentString().
 [7:9..7:20): stripPrefix -> scala/collection/StringOps#stripPrefix().

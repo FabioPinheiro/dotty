@@ -150,29 +150,7 @@ trait TypeAssigner {
       errorType(ex"$qualType does not have a constructor", tree.sourcePos)
     else {
       val kind = if (name.isTypeName) "type" else "value"
-      def addendum =
-        if (qualType.derivesFrom(defn.DynamicClass))
-          "\npossible cause: maybe a wrong Dynamic method signature?"
-        else qual1.getAttachment(Typer.HiddenSearchFailure) match
-          case Some(failure) if !failure.reason.isInstanceOf[Implicits.NoMatchingImplicits] =>
-            i""".
-              |An extension method was tried, but could not be fully constructed:
-              |
-              |    ${failure.tree.show.replace("\n", "\n    ")}"""
-          case _ =>
-            if (tree.hasAttachment(desugar.MultiLineInfix))
-              i""".
-                 |Note that `$name` is treated as an infix operator in Scala 3.
-                 |If you do not want that, insert a `;` or empty line in front
-                 |or drop any spaces behind the operator."""
-            else if qualType.isBottomType then ""
-            else
-              var add = importSuggestionAddendum(
-                ViewProto(qualType.widen,
-                  SelectionProto(name, WildcardType, NoViewsAllowed, privateOK = false)))
-              if add.isEmpty then ""
-              else ", but could be made available as an extension method." ++ add
-      end addendum
+      def addendum = err.selectErrorAddendum(tree, qual1, qualType, importSuggestionAddendum)
       errorType(NotAMember(qualType, name, kind, addendum), tree.sourcePos)
     }
   }
@@ -315,7 +293,7 @@ trait TypeAssigner {
 
   def assignType(tree: untpd.TypeApply, fn: Tree, args: List[Tree])(using Context): TypeApply = {
     def fail = tree.withType(errorType(err.takesNoParamsStr(fn, "type "), tree.sourcePos))
-    fn.tpe.widen match {
+    ConstFold(fn.tpe.widen match {
       case pt: TypeLambda =>
         tree.withType {
           val paramNames = pt.paramNames
@@ -381,7 +359,7 @@ trait TypeAssigner {
       case _ =>
         //println(i"bad type: $fn: ${fn.symbol} / ${fn.symbol.isType} / ${fn.symbol.info}") // DEBUG
         fail
-    }
+    })
   }
 
   def assignType(tree: untpd.Typed, tpt: Tree)(using Context): Typed =

@@ -1154,25 +1154,24 @@ object tpd extends Trees.Instance[Type] with TypedTreeInfo {
     }
   }
 
-  /** A tree that represents the class of the erasure of type `tp`. */
-  def clsOf(tp: Type)(implicit ctx: Context): Tree = {
-    def TYPE(module: TermSymbol) = ref(module).select(nme.TYPE_)
-    defn.scalaClassName(tp) match {
-      case tpnme.Boolean => TYPE(defn.BoxedBooleanModule)
-      case tpnme.Byte => TYPE(defn.BoxedByteModule)
-      case tpnme.Short => TYPE(defn.BoxedShortModule)
-      case tpnme.Char => TYPE(defn.BoxedCharModule)
-      case tpnme.Int => TYPE(defn.BoxedIntModule)
-      case tpnme.Long => TYPE(defn.BoxedLongModule)
-      case tpnme.Float => TYPE(defn.BoxedFloatModule)
-      case tpnme.Double => TYPE(defn.BoxedDoubleModule)
-      case tpnme.Unit => TYPE(defn.BoxedUnitModule)
-      case _ =>
-        if (ctx.erasedTypes || !tp.derivesFrom(defn.ArrayClass))
+  /** A tree that corresponds to `Predef.classOf[$tp]` in source */
+  def clsOf(tp: Type)(implicit ctx: Context): Tree =
+    if ctx.erasedTypes then
+      def TYPE(module: TermSymbol) = ref(module).select(nme.TYPE_)
+      defn.scalaClassName(tp) match
+        case tpnme.Boolean => TYPE(defn.BoxedBooleanModule)
+        case tpnme.Byte => TYPE(defn.BoxedByteModule)
+        case tpnme.Short => TYPE(defn.BoxedShortModule)
+        case tpnme.Char => TYPE(defn.BoxedCharModule)
+        case tpnme.Int => TYPE(defn.BoxedIntModule)
+        case tpnme.Long => TYPE(defn.BoxedLongModule)
+        case tpnme.Float => TYPE(defn.BoxedFloatModule)
+        case tpnme.Double => TYPE(defn.BoxedDoubleModule)
+        case tpnme.Unit => TYPE(defn.BoxedUnitModule)
+        case _ =>
           Literal(Constant(TypeErasure.erasure(tp)))
-        else Literal(Constant(tp))
-    }
-  }
+    else
+      Literal(Constant(tp))
 
   @tailrec
   def sameTypes(trees: List[tpd.Tree], trees1: List[tpd.Tree]): Boolean =
@@ -1214,6 +1213,12 @@ object tpd extends Trees.Instance[Type] with TypedTreeInfo {
   /** A key to be used in a context property that tracks enclosing inlined calls */
   private val InlinedCalls = Property.Key[List[Tree]]()
 
+  /** A key to be used in a context property that tracks the number of inlined trees */
+  private val InlinedTrees = Property.Key[Counter]()
+  final class Counter {
+    var count: Int = 0
+  }
+
   /** Record an enclosing inlined call.
    *  EmptyTree calls (for parameters) cancel the next-enclosing call in the list instead of being added to it.
    *  We assume parameters are never nested inside parameters.
@@ -1230,7 +1235,8 @@ object tpd extends Trees.Instance[Type] with TypedTreeInfo {
       else
         call :: oldIC
 
-    ctx.fresh.setProperty(InlinedCalls, newIC)
+    val ctx1 = ctx.fresh.setProperty(InlinedCalls, newIC)
+    if oldIC.isEmpty then ctx1.setProperty(InlinedTrees, new Counter) else ctx1
   }
 
   /** All enclosing calls that are currently inlined, from innermost to outermost.
@@ -1238,13 +1244,23 @@ object tpd extends Trees.Instance[Type] with TypedTreeInfo {
   def enclosingInlineds(implicit ctx: Context): List[Tree] =
     ctx.property(InlinedCalls).getOrElse(Nil)
 
+  /** Record inlined trees */
+  def addInlinedTrees(n: Int)(implicit ctx: Context): Unit =
+    ctx.property(InlinedTrees).foreach(_.count += n)
+
+  /** Check if the limit on the number of inlined trees has been reached */
+  def reachedInlinedTreesLimit(implicit ctx: Context): Boolean =
+    ctx.property(InlinedTrees) match
+      case Some(c) => c.count > ctx.settings.XmaxInlinedTrees.value
+      case None => false
+
   /** The source file where the symbol of the `inline` method referred to by `call`
    *  is defined
    */
   def sourceFile(call: Tree)(implicit ctx: Context): SourceFile = call.symbol.source
 
   /** Desugar identifier into a select node. Return the tree itself if not possible */
-  def desugarIdent(tree: Ident)(implicit ctx: Context): Tree = {
+  def desugarIdent(tree: Ident)(implicit ctx: Context): RefTree = {
     val qual = desugarIdentPrefix(tree)
     if (qual.isEmpty) tree
     else qual.select(tree.symbol)
