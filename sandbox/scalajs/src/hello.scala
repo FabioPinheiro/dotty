@@ -17,8 +17,39 @@
 //   val value2 = "ola".pure
 // }
 
-trait A { def [T](t: T).m: String = "trait"}
-given A { def m[T](x: T): String  = "given" }
+object Test {
+  opaque type SomeUnrelatedOpaque = Int
+  class A[T](val d: T)
+  extension on [T] (x: A[T]) { def value: T = x.d }
+}
+
+
+// object Rates {
+
+//   case class A[T](d: Double)
+//   object A {
+//     extension on [T] (x: A[T]) { def value: String = "TEST" }
+//   }
+
+//   opaque type Rate[T] = Double
+
+//   // object Rate {
+
+//   //   def apply[T](d: Double): Rate[T] = d
+
+//   //   //extension RateOps on (x: Rate[Any]) { def value: Double = x }
+//   //   extension on [T] (x: Rate[T]) { def value: Double = x }
+//   // }
+// }
+
+//import Rates._
+//val b1 = Rate(56d).value
+//val b2 = Rate(78d).value
+
+
+
+// trait A { def [T](t: T).m: String = "trait"}
+// given A { def m[T](x: T): String  = "given" }
 
 // -- Error: sandbox/scalajs/src/hello.scala:21:14 --------------------------------
 // 21 |given A { def m[T](x: T): String  = "given" }
