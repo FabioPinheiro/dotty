@@ -331,6 +331,7 @@ object JSEncoding {
       case a @ AnnotatedType(t, _) =>
         //debuglog(s"typeKind of annotated type $a")
         toTypeRefInternal(t)
+
     }
   }
 

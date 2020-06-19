@@ -1032,7 +1032,15 @@ object Build {
       managedSources in Test ++= {
         val dir = fetchScalaJSSource.value / "test-suite"
         (
-          (dir / "shared/src/test/scala/org/scalajs/testsuite/compiler" ** (("*.scala":FileFilter) -- "RegressionTest.scala" -- "ReflectiveCallTest.scala")).get
+          (dir / "shared/src/test/scala/org/scalajs/testsuite/compiler" ** (("*.scala":FileFilter)
+            -- "RegressionTest.scala"
+            // wait for https://github.com/scala-js/scala-js/pull/4092
+            // check tailrec_in_trait_with_self_type_scala_2_12_issue_3058 does not compile
+            // check tailrec_in_class_with_self_type_scala_2_12_issue_3058 (another) does not compile
+            // check tailrec_in_trait_with_self_type_scala_2_12_issue_3267 does not compile
+            // class Child; trait Parent { this: Child => final def bar: Int = bar }
+            -- "ReflectiveCallTest.scala"
+            )).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/javalib/lang" ** "*.scala").get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/javalib/io" ** (("*.scala": FileFilter) -- "ReadersTest.scala")).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/javalib/math" ** "*.scala").get
@@ -1073,7 +1081,7 @@ object Build {
             -- "ArrayBuilderTest.scala" //need to use scalajs/scalajs@341e3a9 see https://github.com/scala-js/scala-js/pull/4072 and lampepfl/dotty#9132
             -- "ClassTagTest.scala" //need to use scalajs/scalajs@341e3a9 see https://github.com/scala-js/scala-js/pull/4072
             //and also need to fix https://gitter.im/lampepfl/dotty?at=5ee10d097c64f31f1151ef7f but wait for lampepfl/dotty#9095 https://github.com/lampepfl/dotty/pull/9095
-            //-- "EnumerationTest.scala"
+            -- "EnumerationTest.scala" //Missing compiler phase PrepJSInterop
             -- "SymbolTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4079
             )).get
           ++ (dir / "shared/src/test/require-sam" ** "*.scala").get

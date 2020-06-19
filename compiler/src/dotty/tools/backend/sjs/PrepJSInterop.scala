@@ -46,11 +46,11 @@ class PrepJSInterop extends MiniPhase {
       case ValDef(name, tpt, Ident(simpleName: SimpleName)) =>
         //https://github.com/lampepfl/dotty/blob/master/compiler/src/dotty/tools/dotc/ast/tpd.scala
         //https://github.com/lampepfl/dotty/blob/master/compiler/src/dotty/tools/dotc/ast/Trees.scala
-        println(s"@@ $tpt") //TypeTree[TypeRef(ThisType(TypeRef(ThisType(TypeRef(NoPrefix,module class <empty>)),module class MyEnumeration$)),class Value)]
-        println(s"##### $name ${simpleName}")
+        //println(s"@@ $tpt") //TypeTree[TypeRef(ThisType(TypeRef(ThisType(TypeRef(NoPrefix,module class <empty>)),module class MyEnumeration$)),class Value)]
+        //println(s"##### $name ${simpleName}")
         tree
       case ValDef(name, tpt, rhs) =>
-        println(s"@@@ $name , $tpt , $rhs")
+        //println(s"@@@ $name , $tpt , $rhs")
         //@@@ MyEnumeration , Ident(MyEnumeration$) , Apply(Select(New(Ident(MyEnumeration$)),<init>),List())
         //@@@ _ , SingletonTypeTree(Ident(MyEnumeration)) , EmptyTree
         if(name.toString == "MyEnumeration") tree
