@@ -212,10 +212,36 @@ class SymUtils(val self: Symbol) extends AnyVal {
   def isSplice(implicit ctx: Context): Boolean =
     self == defn.InternalQuoted_exprSplice || self == defn.InternalQuoted_exprNestedSplice || self == defn.QuotedType_splice
 
+  /** Is symbol an extension method? Accessors are excluded since
+   *  after the getters phase collective extension objects become accessors
+   */
+  def isExtensionMethod(using Context): Boolean =
+    self.isAllOf(ExtensionMethod, butNot = Accessor)
+
+  /** Is symbol the module class of a collective extension object? */
   def isCollectiveExtensionClass(using Context): Boolean =
-    self.is(ModuleClass) && self.sourceModule.is(Extension, butNot = Method)
+    self.is(ModuleClass) && self.sourceModule.is(Extension) && !self.sourceModule.isExtensionMethod
 
   def isScalaStatic(using Context): Boolean =
     self.hasAnnotation(ctx.definitions.ScalaStaticAnnot)
 
+  /** Is symbol assumed or declared as an infix symbol? */
+  def isDeclaredInfix(using Context): Boolean =
+    self.hasAnnotation(defn.InfixAnnot)
+    || defn.isInfix(self)
+    || self.name.isUnapplyName
+       && self.owner.is(Module)
+       && self.owner.linkedClass.is(Case)
+       && self.owner.linkedClass.isDeclaredInfix
+
+  /** The declared self type of this class, as seen from `site`, stripping
+   *  all refinements for opaque types.
+   */
+  def declaredSelfTypeAsSeenFrom(site: Type)(using Context) =
+    def (tp: Type).stripOpaques: Type = tp match
+      case RefinedType(parent, name, _) if self.info.decl(name).symbol.isOpaqueAlias =>
+        parent.stripOpaques
+      case _ =>
+        tp
+    self.asClass.givenSelfType.stripOpaques.asSeenFrom(site, self)
 }

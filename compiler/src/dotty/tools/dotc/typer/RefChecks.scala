@@ -95,8 +95,8 @@ object RefChecks {
   private def checkParents(cls: Symbol)(using Context): Unit = cls.info match {
     case cinfo: ClassInfo =>
       def checkSelfConforms(other: ClassSymbol, category: String, relation: String) = {
-        val otherSelf = other.givenSelfType.asSeenFrom(cls.thisType, other.classSymbol)
-        if (otherSelf.exists && !(cinfo.selfType <:< otherSelf))
+        val otherSelf = other.declaredSelfTypeAsSeenFrom(cls.thisType)
+        if otherSelf.exists && !(cinfo.selfType <:< otherSelf) then
           ctx.error(DoesNotConformToSelfType(category, cinfo.selfType, cls, otherSelf, relation, other.classSymbol),
             cls.sourcePos)
       }
@@ -143,10 +143,10 @@ object RefChecks {
    *
    *    1.1. M must have the same or stronger access privileges as O.
    *    1.2. O must not be effectively final.
-   *    1.9.2  If M or O are extension methods, they must both be extension methods.
-   *    1.3. O is deferred, or M has `override` modifier.
-   *    1.4. If O is stable, then so is M.
-   *     // @M: LIFTED 1.5. Neither M nor O are a parameterized type alias
+   *    1.3. If M or O are extension methods, they must both be extension methods.
+   *         (Should be before the check for the need of `override` modifier.)
+   *    1.4. O is deferred, or M has `override` modifier.
+   *    1.5. If O is stable, then so is M.
    *    1.6. If O is a type alias, then M is an alias of O.
    *    1.7. If O is an abstract type then
    *       1.7.1 either M is an abstract type, and M's bounds are sharper than O's bounds.
@@ -157,7 +157,7 @@ object RefChecks {
    *    1.8.1  M's type is a subtype of O's type, or
    *    1.8.2  M is of type []S, O is of type ()T and S <: T, or
    *    1.8.3  M is of type ()S, O is of type []T and S <: T, or
-   *    1.9.1  If M is erased, O is erased. If O is erased, M is erased or inline.
+   *    1.9. If M is erased, O is erased. If O is erased, M is erased or inline.
    *    1.10.  If O is inline (and deferred, otherwise O would be final), M must be inline
    *    1.11.  If O is a Scala-2 macro, M must be a Scala-2 macro.
    *  2. Check that only abstract classes have deferred members
@@ -343,9 +343,15 @@ object RefChecks {
         overrideError("cannot be used here - classes can only override abstract types")
       else if (other.isEffectivelyFinal) // (1.2)
         overrideError(i"cannot override final member ${other.showLocated}")
+<<<<<<< HEAD
       else if (member.isAllOf(ExtensionMethod) && !other.isAllOf(ExtensionMethod)) // (1.9.2)
         overrideError("is an extension method, cannot override a normal method")
       else if (other.isAllOf(ExtensionMethod) && !member.isAllOf(ExtensionMethod)) // (1.9.2)
+=======
+      else if (member.isAllOf(ExtensionMethod) && !other.isAllOf(ExtensionMethod)) // (1.3)
+        overrideError("is an extension method, cannot override a normal method")
+      else if (other.isAllOf(ExtensionMethod) && !member.isAllOf(ExtensionMethod)) // (1.3)
+>>>>>>> origin/master
         overrideError("is a normal method, cannot override an extension method")
       else if (!other.is(Deferred) &&
                  !other.name.is(DefaultGetterName) &&
@@ -385,7 +391,7 @@ object RefChecks {
         intersectionIsEmpty(member.extendedOverriddenSymbols, other.extendedOverriddenSymbols))
         overrideError("cannot override a concrete member without a third member that's overridden by both " +
           "(this rule is designed to prevent ``accidental overrides'')")
-      else if (other.isStableMember && !member.isStableMember) // (1.4)
+      else if (other.isStableMember && !member.isStableMember) // (1.5)
         overrideError("needs to be a stable, immutable value")
       else if (member.is(ModuleVal) && !other.isRealMethod && !other.isOneOf(Deferred | Lazy))
         overrideError("may not override a concrete non-lazy value")
@@ -394,9 +400,9 @@ object RefChecks {
         overrideError("may not override a non-lazy value")
       else if (other.is(Lazy) && !other.isRealMethod && !member.is(Lazy))
         overrideError("must be declared lazy to override a lazy value")
-      else if (member.is(Erased) && !other.is(Erased)) // (1.9.1)
+      else if (member.is(Erased) && !other.is(Erased)) // (1.9)
         overrideError("is erased, cannot override non-erased member")
-      else if (other.is(Erased) && !member.isOneOf(Erased | Inline)) // (1.9.1)
+      else if (other.is(Erased) && !member.isOneOf(Erased | Inline)) // (1.9)
         overrideError("is not erased, cannot override erased member")
       else if other.is(Inline) && !member.is(Inline) then // (1.10)
         overrideError("is not inline, cannot implement an inline method")

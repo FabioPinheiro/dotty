@@ -169,27 +169,19 @@ object Checking {
    *  and that the instance conforms to the self type of the created class.
    */
   def checkInstantiable(tp: Type, posd: Positioned)(using Context): Unit =
-    tp.underlyingClassRef(refinementOK = false) match {
+    tp.underlyingClassRef(refinementOK = false) match
       case tref: TypeRef =>
         val cls = tref.symbol
         if (cls.isOneOf(AbstractOrTrait))
           ctx.error(CantInstantiateAbstractClassOrTrait(cls, isTrait = cls.is(Trait)), posd.sourcePos)
-        if (!cls.is(Module)) {
-          def (tp: Type).stripOpaques: Type = tp match
-            case RefinedType(parent, name, _) if cls.info.decl(name).symbol.isOpaqueAlias =>
-              parent.stripOpaques
-            case _ =>
-              tp
+        if !cls.is(Module) then
           // Create a synthetic singleton type instance, and check whether
           // it conforms to the self type of the class as seen from that instance.
           val stp = SkolemType(tp)
-          val selfType =
-            cls.asClass.givenSelfType.stripOpaques.asSeenFrom(stp, cls)
-          if (selfType.exists && !(stp <:< selfType))
+          val selfType = cls.declaredSelfTypeAsSeenFrom(stp)
+          if selfType.exists && !(stp <:< selfType) then
             ctx.error(DoesNotConformToSelfTypeCantBeInstantiated(tp, selfType), posd.sourcePos)
-        }
       case _ =>
-    }
 
   /** Check that type `tp` is realizable. */
   def checkRealizable(tp: Type, posd: Positioned, what: String = "path")(using Context): Unit = {
@@ -810,21 +802,13 @@ trait Checking {
    *  operator is alphanumeric, it must be declared `@infix`.
    */
   def checkValidInfix(tree: untpd.InfixOp, meth: Symbol)(using Context): Unit = {
-
-    def isInfix(sym: Symbol): Boolean =
-      sym.hasAnnotation(defn.InfixAnnot) ||
-      defn.isInfix(sym) ||
-      sym.name.isUnapplyName &&
-        sym.owner.is(Module) && sym.owner.linkedClass.is(Case) &&
-        isInfix(sym.owner.linkedClass)
-
     tree.op match {
       case id @ Ident(name: Name) =>
         name.toTermName match {
           case name: SimpleName
           if !untpd.isBackquoted(id) &&
              !name.isOperatorName &&
-             !isInfix(meth) &&
+             !meth.isDeclaredInfix &&
              !meth.maybeOwner.is(Scala2x) &&
              !infixOKSinceFollowedBy(tree.right) &&
              sourceVersion.isAtLeast(`3.1`) =>
