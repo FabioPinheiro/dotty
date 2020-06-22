@@ -931,7 +931,7 @@ object Build {
       scalaJSUseMainModuleInitializer := true,
     )
 
-  val scalajsTestsCommit: Option[String] = Some("341e3a986460bf432f28338647f0142440119d98")
+  val scalajsTestsCommit: Option[String] = Some("b3e2d0477adfc87e3507bac6fdd615e4a7880629")
 
   /** Scala.js test suite.
    *
@@ -1033,7 +1033,7 @@ object Build {
         val dir = fetchScalaJSSource.value / "test-suite"
         (
           (dir / "shared/src/test/scala/org/scalajs/testsuite/compiler" ** (("*.scala":FileFilter)
-            //-- "RegressionTest.scala" //Fixed on scala-js/scala-js#4092 and lampepfl/dotty#9207
+            -- "RegressionTest.scala" //WIP on scala-js/scala-js#4092 and lampepfl/dotty#9207 and ??? new Bug3013 "found for tree of type org.scalajs.ir.Trees$This""
             -- "ReflectiveCallTest.scala"
             )).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/javalib/lang" ** "*.scala").get
@@ -1076,8 +1076,8 @@ object Build {
             //-- "ArrayBuilderTest.scala" //Fixed on scala-js/scala-js#4072 and lampepfl/dotty#9132
             -- "ClassTagTest.scala" //Fixed on scala-js/scala-js#4072 and TODO
             //and also need to fix https://gitter.im/lampepfl/dotty?at=5ee10d097c64f31f1151ef7f but wait for lampepfl/dotty#9095 https://github.com/lampepfl/dotty/pull/9095
-            -- "EnumerationTest.scala" //Missing compiler phase PrepJSInterop
-            -- "SymbolTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4079 scala-js/scala-js#4079
+            -- "EnumerationTest.scala" //TODO Missing compiler phase PrepJSInterop (I stated WIP but I don't understand some things)
+            -- "SymbolTest.scala" //WIP waiting for scala-js/scala-js#4079
             )).get
           ++ (dir / "shared/src/test/require-sam" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/compiler" ** (("*.scala": FileFilter) -- "DefaultMethodsTest.scala")).get
