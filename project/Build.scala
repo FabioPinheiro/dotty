@@ -1033,12 +1033,7 @@ object Build {
         val dir = fetchScalaJSSource.value / "test-suite"
         (
           (dir / "shared/src/test/scala/org/scalajs/testsuite/compiler" ** (("*.scala":FileFilter)
-            -- "RegressionTest.scala"
-            // wait for https://github.com/scala-js/scala-js/pull/4092
-            // check tailrec_in_trait_with_self_type_scala_2_12_issue_3058 does not compile
-            // check tailrec_in_class_with_self_type_scala_2_12_issue_3058 (another) does not compile
-            // check tailrec_in_trait_with_self_type_scala_2_12_issue_3267 does not compile
-            // class Child; trait Parent { this: Child => final def bar: Int = bar }
+            //-- "RegressionTest.scala" //Fixed on scala-js/scala-js#4092 and lampepfl/dotty#9207
             -- "ReflectiveCallTest.scala"
             )).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/javalib/lang" ** "*.scala").get
@@ -1078,11 +1073,11 @@ object Build {
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/niobuffer" ** "*.scala").get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/niocharset" ** (("*.scala": FileFilter)  -- "BaseCharsetTest.scala" -- "Latin1Test.scala" -- "USASCIITest.scala" -- "UTF16Test.scala" -- "UTF8Test.scala")).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/scalalib" ** (("*.scala": FileFilter)
-            -- "ArrayBuilderTest.scala" //need to use scalajs/scalajs@341e3a9 see https://github.com/scala-js/scala-js/pull/4072 and lampepfl/dotty#9132
-            -- "ClassTagTest.scala" //need to use scalajs/scalajs@341e3a9 see https://github.com/scala-js/scala-js/pull/4072
+            //-- "ArrayBuilderTest.scala" //Fixed on scala-js/scala-js#4072 and lampepfl/dotty#9132
+            -- "ClassTagTest.scala" //Fixed on scala-js/scala-js#4072 and TODO
             //and also need to fix https://gitter.im/lampepfl/dotty?at=5ee10d097c64f31f1151ef7f but wait for lampepfl/dotty#9095 https://github.com/lampepfl/dotty/pull/9095
             -- "EnumerationTest.scala" //Missing compiler phase PrepJSInterop
-            -- "SymbolTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4079
+            -- "SymbolTest.scala" //wait for https://github.com/scala-js/scala-js/pull/4079 scala-js/scala-js#4079
             )).get
           ++ (dir / "shared/src/test/require-sam" ** "*.scala").get
           ++ (dir / "shared/src/test/require-jdk8/org/scalajs/testsuite/compiler" ** (("*.scala": FileFilter) -- "DefaultMethodsTest.scala")).get
