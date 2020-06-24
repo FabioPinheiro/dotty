@@ -11,6 +11,11 @@ sealed trait Tuple extends Product {
   inline def toArray: Array[Object] =
     scala.runtime.Tuple.toArray(this)
 
+  /** Create a copy this tuple as a List */
+  inline def toList: List[Union[this.type]] =
+    this.productIterator.toList
+      .asInstanceOf[List[Union[this.type]]]
+
   /** Create a copy this tuple as an IArray */
   inline def toIArray: IArray[Object] =
     scala.runtime.Tuple.toIArray(this)
@@ -103,10 +108,21 @@ object Tuple {
     case x *: xs => S[Size[xs]]
   }
 
+  /** Fold a tuple `(T1, ..., Tn)` into `F[T1, F[... F[Tn, Z]...]]]` */
+  type Fold[T <: Tuple, Z, F[_, _]] = T match
+    case EmptyTuple => Z
+    case h *: t => F[h, Fold[t, Z, F]]
+
   /** Converts a tuple `(T1, ..., Tn)` to `(F[T1], ..., F[Tn])` */
   type Map[Tup <: Tuple, F[_]] <: Tuple = Tup match {
     case EmptyTuple => EmptyTuple
     case h *: t => F[h] *: Map[t, F]
+  }
+
+  /** Converts a tuple `(T1, ..., Tn)` to a flattened `(..F[T1], ..., ..F[Tn])` */
+  type FlatMap[Tup <: Tuple, F[_] <: Tuple] <: Tuple = Tup match {
+    case EmptyTuple => EmptyTuple
+    case h *: t => Concat[F[h], FlatMap[t, F]]
   }
 
   /** Given two tuples, `A1 *: ... *: An * At` and `B1 *: ... *: Bn *: Bt`
@@ -156,6 +172,11 @@ object Tuple {
    * `(Ti+1, ..., Tn)`.
    */
   type Split[T <: Tuple, N <: Int] = (Take[T, N], Drop[T, N])
+
+  /** Given a tuple `(T1, ..., Tn)`, returns a union of its
+   *  member types: `T1 | ... | Tn`. Returns `Nothing` if the tuple is empty.
+   */
+  type Union[T <: Tuple] = Fold[T, Nothing, [x, y] =>> x | y]
 
   /** Empty tuple */
   def apply(): EmptyTuple = EmptyTuple
