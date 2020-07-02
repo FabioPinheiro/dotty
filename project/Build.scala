@@ -1033,7 +1033,7 @@ object Build {
         val dir = fetchScalaJSSource.value / "test-suite"
         (
           (dir / "shared/src/test/scala/org/scalajs/testsuite/compiler" ** (("*.scala":FileFilter)
-            -- "RegressionTest.scala" //WIP on scala-js/scala-js#4092 and lampepfl/dotty#9207 and ??? new Bug3013 "found for tree of type org.scalajs.ir.Trees$This""
+            //-- "RegressionTest.scala" //WIP on scala-js/scala-js#4092 and lampepfl/dotty#9207 and ??? new Bug3013 "found for tree of type org.scalajs.ir.Trees$This""
             -- "ReflectiveCallTest.scala"
             )).get
           ++ (dir / "shared/src/test/scala/org/scalajs/testsuite/javalib/lang" ** "*.scala").get

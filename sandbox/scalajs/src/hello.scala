@@ -6,18 +6,23 @@
 // ###       8   8     o888o o888o         ###   _\  `--' |,'   _/
 // ###########################################  /__`.____.'__.-'
 
-//[WIP] https://github.com/lampepfl/dotty/compare/master...FabioPinheiro:enable_ArrayBuilderTest_ClassTagTest_for_Scala_js
 
-class Child
-class HelloTest {
-  def simpleTest(): Unit = {
-    trait Parent {
-      this: Child =>
-      final def bar: Int = bar
-    }
+
+trait A {
+  val s = "same val in A"
+  def f: String = s
+}
+class B extends A {
+  class C {
+    val s = "This will be called and it shouldn't"
+    def call_f_in_A: String = B.super[A].f
   }
 }
-
+object Test extends App {
+  val b = new B
+  val c = new b.C
+  println(c.call_f_in_A)
+}
 
 //object MyEnumeration extends Enumeration  { val A = Value }
 
